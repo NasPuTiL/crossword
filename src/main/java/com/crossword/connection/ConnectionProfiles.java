@@ -1,35 +1,60 @@
 package com.crossword.connection;
 
+import com.crossword.utility.Profile;
 import org.springframework.stereotype.Service;
 
-import java.net.PasswordAuthentication;
 import java.sql.*;
 
 @Service
 public class ConnectionProfiles {
-    public static PasswordAuthentication getAuthenticator(String username, String password) {
-        Connection conn = null;
+    private static Connection conn;
 
-        String driver_app = "org.postgresql.Driver";
-        String url = "jdbc:postgresql://localhost:5432/crossword";
-        String usernameDb = "postgres";
-        String passwordDb = "postgres";
-
+    public ConnectionProfiles(String driver, String url, String username, String password) {
         try {
-            Class.forName(driver_app);
-            conn = DriverManager.getConnection(url, usernameDb, passwordDb);
+            Class.forName(driver);
+            this.conn = DriverManager.getConnection(url, username, password);
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        String sql = "SELECT count(Id) FROM profile where username = ?";
+    }
+
+    public static void setProfile(Profile profile) {
+        String sql = "INSERT INTO public.Profile(Id, sessionID, username, password, email, timeExtend)";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, profile.getId());
+            ps.setString(2, profile.getSessionID());
+            ps.setString(3, profile.getUsername());
+            ps.setString(3, profile.getPassword());
+            ps.setString(4, profile.getEmail());
+            ps.setTimestamp(5, profile.getTimeExtend());
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getSession(String username, String password) {
+
+        String sql = "SELECT count(id), sessionId FROM profile where username = ? and password = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, username);
+            ps.setString(1, password);
             ResultSet resultSet = ps.executeQuery();
 
-            while (resultSet.next()){
-                int sizeOfQuery = resultSet.getInt(1);
-                return (sizeOfQuery == 1)? new PasswordAuthentication(username, password.toCharArray()) : null;
+            String sessionId = null;
+            while (resultSet.next()) {
+                int res = resultSet.getInt(1);
+
+                if (res == 1) {
+                    sessionId = resultSet.getString(2);
+                    return sessionId;
+                } else {
+                    return "0";
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,4 +68,5 @@ public class ConnectionProfiles {
         }
         return null;
     }
+
 }
