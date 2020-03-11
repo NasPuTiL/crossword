@@ -1,9 +1,7 @@
-package com.example.connection;
+package com.crossword.connection;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.sql.*;
 
@@ -13,7 +11,7 @@ public class ConnectionProfiles {
         Connection conn = null;
 
         String driver_app = "org.postgresql.Driver";
-        String url = "jdbc:postgresql://localhost:5432/cross_word";
+        String url = "jdbc:postgresql://localhost:5432/crossword";
         String usernameDb = "postgres";
         String passwordDb = "postgres";
 
@@ -23,13 +21,11 @@ public class ConnectionProfiles {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        String sql = "SELECT counnt(Id) FROM profile where name = ? and pass = ?";
+        String sql = "SELECT count(Id) FROM profile where username = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, username);
-            ps.setString(2, password);
             ResultSet resultSet = ps.executeQuery();
-            ps.close();
 
             while (resultSet.next()){
                 int sizeOfQuery = resultSet.getInt(1);
