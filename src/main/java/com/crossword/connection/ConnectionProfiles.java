@@ -1,12 +1,14 @@
 package com.crossword.connection;
 
 import com.crossword.utility.Profile;
-import org.springframework.stereotype.Service;
+import org.json.simple.JSONObject;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Service
 public class ConnectionProfiles {
+    private static final java.util.UUID UUID = new UUID(28, 35);
     private static Connection conn;
 
     public ConnectionProfiles(String driver, String url, String username, String password) {
@@ -18,55 +20,78 @@ public class ConnectionProfiles {
         }
     }
 
-    public static void setProfile(Profile profile) {
-        String sql = "INSERT INTO public.Profile(Id, sessionID, username, password, email, timeExtend)";
+    public JSONObject register(Profile profile) {
+
+        String sql = " INTO INTO public.Profile(sessionID, username, password, email, timeExtend) values (?, ?, ?, ?, ?)";
         try {
+            LocalDateTime localDate = LocalDateTime.now().plusMinutes(10);
+            String uniqueID = UUID.randomUUID().toString();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setLong(1, profile.getId());
-            ps.setString(2, profile.getSessionID());
-            ps.setString(3, profile.getUsername());
+            ps.setString(1, uniqueID);
+            ps.setString(2, profile.getUsername());
             ps.setString(3, profile.getPassword());
             ps.setString(4, profile.getEmail());
-            ps.setTimestamp(5, profile.getTimeExtend());
+            ps.setObject(5, localDate);
             ps.executeUpdate();
             ps.close();
-
+            JSONObject auth = new JSONObject();
+            if (profile == null) {
+                auth.put("sessionid", null);
+                return auth;
+            }
+            auth.put("id", profile.getId());
+            auth.put("username", profile.getUsername());
+            auth.put("email", profile.getEmail());
+            auth.put("sessionId", profile.getSessionID());
+            auth.put("duration", profile.getDuration());
+            conn.close();
+            return auth;
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    public String getSession(String username, String password) {
-
-        String sql = "SELECT count(id), sessionId FROM profile where username = ? and password = ?";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, username);
-            ps.setString(1, password);
-            ResultSet resultSet = ps.executeQuery();
-
-            String sessionId = null;
-            while (resultSet.next()) {
-                int res = resultSet.getInt(1);
-
-                if (res == 1) {
-                    sessionId = resultSet.getString(2);
-                    return sessionId;
-                } else {
-                    return "0";
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                conn.close();
-                return null;
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return null;
     }
 
+    public JSONObject getSession(String sessionId) {
+        String sql = "SELECT id, username, email, sessionId, duration FROM profile where sessionId = ? ";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, sessionId);
+            ResultSet resultSet = ps.executeQuery();
+
+            while (resultSet.next()) {
+                Profile profile = new Profile(resultSet.getLong(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getString(4),
+                        resultSet.getObject(5, LocalDateTime.class));
+
+                JSONObject auth = new JSONObject();
+                if (profile == null || sesstionExpire(profile.getDuration())) {
+                    auth.put("sessionid", null);
+                    return auth;
+                }
+
+                auth.put("id", profile.getId());
+                auth.put("username", profile.getUsername());
+                auth.put("email", profile.getEmail());
+                auth.put("sessionId", profile.getSessionID());
+                auth.put("duration", profile.getDuration());
+                conn.close();
+                return auth;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public JSONObject login(String sessionId) {
+        //TODO: add login logic;
+        return null;
+    }
+
+    private boolean sesstionExpire(LocalDateTime duration) {
+        return (duration.isAfter(LocalDateTime.now())) ? true : false;
+    }
 }
