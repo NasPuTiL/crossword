@@ -2,7 +2,6 @@ package com.crossword.controller;
 
 import com.crossword.connection.ConnectionProfiles;
 import com.crossword.utility.Profile;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +27,6 @@ public class ControllerAuthorization {
 
     @RequestMapping(method = RequestMethod.GET)
     public String startValue() {
-        System.out.println("password = " + password);
         return "Hello World!";
     }
 
