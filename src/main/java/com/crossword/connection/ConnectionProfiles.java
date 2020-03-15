@@ -3,6 +3,8 @@ package com.crossword.connection;
 import com.crossword.utility.Profile;
 import org.json.simple.JSONObject;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,10 +24,11 @@ public class ConnectionProfiles {
 
     public JSONObject register(Profile profile) {
 
-        String sql = " INTO INTO public.Profile(sessionID, username, password, email, timeExtend) values (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO public.Profile(sessionid, username, password, email, duration) values (?, ?, ?, ?, ?)";
         try {
             LocalDateTime localDate = LocalDateTime.now().plusMinutes(10);
             String uniqueID = UUID.randomUUID().toString();
+
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, uniqueID);
             ps.setString(2, profile.getUsername());
@@ -34,18 +37,44 @@ public class ConnectionProfiles {
             ps.setObject(5, localDate);
             ps.executeUpdate();
             ps.close();
-            JSONObject auth = new JSONObject();
+
             if (profile == null) {
+                JSONObject auth = new JSONObject();
                 auth.put("sessionid", null);
                 return auth;
             }
-            auth.put("id", profile.getId());
-            auth.put("username", profile.getUsername());
-            auth.put("email", profile.getEmail());
-            auth.put("sessionId", profile.getSessionID());
-            auth.put("duration", profile.getDuration());
-            conn.close();
-            return auth;
+            return getProfileByUserName(profile.getUsername());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private JSONObject getProfileByUserName(String username) {
+        JSONObject auth = new JSONObject();
+        String sql = "SELECT id, username, email, sessionid, duration from public.profile where username = ?";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, username);
+            ResultSet resultSet = ps.executeQuery();
+
+
+            while (resultSet.next()) {
+                auth.put("id", resultSet.getString(1));
+                auth.put("username", resultSet.getString(2));
+                auth.put("email", resultSet.getString(3));
+                auth.put("sessionId", resultSet.getString(4));
+                auth.put("duration", resultSet.getString(5));
+
+                if (auth.get("id") == null) {
+                    JSONObject authFaile = new JSONObject();
+                    authFaile.put("sessionid", null);
+                    return authFaile;
+                }
+                conn.close();
+                return auth;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,7 +87,6 @@ public class ConnectionProfiles {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, sessionId);
             ResultSet resultSet = ps.executeQuery();
-
             while (resultSet.next()) {
                 Profile profile = new Profile(resultSet.getLong(1),
                         resultSet.getString(2),
@@ -67,8 +95,8 @@ public class ConnectionProfiles {
                         resultSet.getObject(5, LocalDateTime.class));
 
                 JSONObject auth = new JSONObject();
-                if (profile == null || sesstionExpire(profile.getDuration())) {
-                    auth.put("sessionid", null);
+                if (profile == null || sessionExpire(profile.getDuration())) {
+                    auth.put("sessionid", "Session expired");
                     return auth;
                 }
 
@@ -83,7 +111,9 @@ public class ConnectionProfiles {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        JSONObject auth = new JSONObject();
+        auth.put("sessionid", null);
+        return auth;
     }
 
     public JSONObject login(String sessionId) {
@@ -91,7 +121,7 @@ public class ConnectionProfiles {
         return null;
     }
 
-    private boolean sesstionExpire(LocalDateTime duration) {
-        return (duration.isAfter(LocalDateTime.now())) ? true : false;
+    private boolean sessionExpire(LocalDateTime duration) {
+        return (duration.isBefore(LocalDateTime.now())) ? true : false;
     }
 }

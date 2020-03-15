@@ -2,14 +2,16 @@ package com.crossword.controller;
 
 import com.crossword.connection.ConnectionProfiles;
 import com.crossword.utility.Profile;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/")
+@RequestMapping(value = "/test")
 public class ControllerAuthorization {
 
     @Value(value = "${com.crossword.driver}")
@@ -31,7 +33,8 @@ public class ControllerAuthorization {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public JSONObject getAuthorization(JSONObject authMap) {
+    public JSONObject getAuthorization(@RequestBody JSONObject authMap) {
+        System.out.println("authMap = " + authMap);
         String sessionid = (String) authMap.get("sessionid");
         if (sessionid == null || sessionid.isEmpty()) {
             JSONObject auth = new JSONObject();
@@ -42,8 +45,9 @@ public class ControllerAuthorization {
         return cp.getSession(sessionid);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public Object setProfile(JSONObject profileMap) {
+    @RequestMapping(method = RequestMethod.POST, value = "/register")
+    public Object setProfile(@RequestBody JSONObject profileMap) {
+        System.out.println("IM IN REGISTER METHOD \nprofileMap = " + profileMap);
         if (profileMap == null || profileMap.isEmpty() ||
                 profileMap.get("username") == null ||
                 profileMap.get("email") == null ||
@@ -53,7 +57,7 @@ public class ControllerAuthorization {
             return auth;
         }
 
-        Profile profile = new Profile((String)profileMap.get("username"), (String)profileMap.get("email"), (String)profileMap.get("password"));
+        Profile profile = new Profile((String) profileMap.get("username"), (String) profileMap.get("email"), (String) profileMap.get("password"));
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
         return cp.register(profile);
     }
