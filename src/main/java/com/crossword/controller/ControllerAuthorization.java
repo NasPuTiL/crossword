@@ -2,12 +2,15 @@ package com.crossword.controller;
 
 import com.crossword.connection.ConnectionProfiles;
 import com.crossword.utility.Profile;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/test")
@@ -60,9 +63,10 @@ public class ControllerAuthorization {
         return cp.register(profile);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/get1")
-    public String testGETMethodWithoutArguments() {
-        return "Return subtitle from GET Method with arguments. I added and resoult.";
+    @RequestMapping(method = RequestMethod.GET, value = "/getUsers")
+    public Map<Integer, JSONObject> testGETMethodWithoutArguments() {
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        return cp.getAllUsers();
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/get2")

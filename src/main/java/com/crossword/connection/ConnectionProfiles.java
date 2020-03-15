@@ -1,13 +1,14 @@
 package com.crossword.connection;
 
 import com.crossword.utility.Profile;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.Reader;
 import java.io.StringReader;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 public class ConnectionProfiles {
     private static final java.util.UUID UUID = new UUID(28, 35);
@@ -124,4 +125,43 @@ public class ConnectionProfiles {
     private boolean sessionExpire(LocalDateTime duration) {
         return (duration.isBefore(LocalDateTime.now())) ? true : false;
     }
+
+    public Map<Integer, JSONObject> getAllUsers() {
+        Map<Integer, JSONObject> authInc = new HashMap<>();
+        String sql = "SELECT id, username, password, email, sessionid, duration from public.profile";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet resultSet = ps.executeQuery();
+
+            int x = 0;
+            while (resultSet.next()) {
+                JSONObject auth = new JSONObject();
+                auth.put("id", resultSet.getString(1));
+                auth.put("username", resultSet.getString(2));
+                auth.put("password", resultSet.getString(3));
+                auth.put("email", resultSet.getString(4));
+                auth.put("sessionId", resultSet.getString(5));
+                auth.put("duration", resultSet.getString(6));
+                authInc.put(Integer.valueOf(x), auth);
+
+                if (auth.get("id") == null) {
+                    Map<Integer, JSONObject> authFaile = new HashMap<>();
+                    JSONObject obj = new JSONObject();
+                    obj.put("resoult", null);
+                    authFaile.put(Integer.valueOf(0), obj);
+                    return authFaile;
+                }
+                x++;
+            }
+            conn.close();
+            return authInc;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Map<Integer, JSONObject> authFaile = new HashMap<>();
+        authFaile.put(Integer.valueOf(0), null);
+        return authFaile;
+    }
+
 }
