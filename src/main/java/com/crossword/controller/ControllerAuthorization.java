@@ -28,6 +28,7 @@ public class ControllerAuthorization {
     @Value(value = "${com.crossword.password}")
     private String password;
 
+
     @RequestMapping(method = RequestMethod.GET)
     public String startValue() {
         return "Hello World!";
