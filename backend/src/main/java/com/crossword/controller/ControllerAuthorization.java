@@ -41,13 +41,13 @@ public class ControllerAuthorization {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/register")
-    public Object register(@RequestBody JSONObject profileMap) {
+    public JSONObject register(@RequestBody JSONObject profileMap) {
         System.out.println("@register\njson = " + profileMap);
         String username = (String) profileMap.get("username");
         String email = (String) profileMap.get("email");
         String password = (String) profileMap.get("password");
 
-        if (!Improvment.hasNecessaryFields(username, email, password)) {
+        if (!Improvment.hasNecessaryFieldsRegister(username, email, password)) {
             return Improvment.jsonStatementError("Require fields : username, email, password");
         }
 
@@ -56,29 +56,26 @@ public class ControllerAuthorization {
         return cp.register(profile);
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = "/login")
+    public JSONObject login(@RequestBody JSONObject profileMap) {
+        System.out.println("@login\njson = " + profileMap);
+        String username = (String) profileMap.get("username");
+        String email = (String) profileMap.get("email");
+        String password = (String) profileMap.get("password");
+
+        if (!Improvment.hasNecessaryFieldsLogin(username, email, password)) {
+            return Improvment.jsonStatementError("Require fields: password and username or mail");
+        }
+
+        Profile profile = new Profile(username, email, password);
+        ConnectionProfiles cp = new ConnectionProfiles(this.driver, this.url, this.username, this.password);
+        return cp.login(profile);
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/getUsers")
-    public Map<Integer, JSONObject> testGETMethodWithoutArguments() {
-        System.out.println("@testGETMethodWithoutArguments");
+    public Map<Integer, JSONObject> getUsers() {
+        System.out.println("@getUsers");
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
         return cp.getAllUsers();
     }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/get2")
-    public String testGETMethodWithArguments(int a, int b) {
-        System.out.println("@testGETMethodWithArguments");
-        return "Return subtitle from GET Method with arguments. I added and resoult = " + a + b;
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/post1")
-    public String testPOSTMethodWithoutArguments() {
-        System.out.println("@testPOSTMethodWithoutArguments");
-        return "Return subtitle from POST Method without arguments.";
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/post2")
-    public String testPOSTMethodWithArguments(int a, int b) {
-        System.out.println("@testPOSTMethodWithArguments");
-        return "Return subtitle from POST Method with arguments. I added and resoult = " + a + b;
-    }
-
 }

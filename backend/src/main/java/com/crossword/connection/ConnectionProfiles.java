@@ -39,10 +39,9 @@ public class ConnectionProfiles {
             ps.setString(3, profile.getPassword());
             ps.setString(4, profile.getEmail());
             ps.setObject(5, localDate);
-            ps.executeUpdate();
+            int result = ps.executeUpdate();
             ps.close();
-
-            if (profile == null) {
+            if (result != 1) {
                 return jsonStatementError("Can't add to database profile with this values");
             }
 
@@ -62,7 +61,6 @@ public class ConnectionProfiles {
             ps.setString(1, username);
             ResultSet resultSet = ps.executeQuery();
 
-
             while (resultSet.next()) {
                 auth.put("id", resultSet.getString(1));
                 auth.put("username", resultSet.getString(2));
@@ -71,13 +69,11 @@ public class ConnectionProfiles {
                 auth.put("duration", resultSet.getString(5));
 
                 if (auth.get("id") == null) {
-                    JSONObject authFaile = new JSONObject();
-                    authFaile.put("sessionid", null);
-                    return authFaile;
+                    return jsonStatementError("Some problem with getProfileByUserName, username: " + username);
                 }
-                conn.close();
-                return auth;
             }
+            conn.close();
+            return auth;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -118,9 +114,45 @@ public class ConnectionProfiles {
         return jsonStatementError("Something go wrong with getting session");
     }
 
-    public JSONObject login(String sessionId) {
-        //TODO: add login logic;
-        return null;
+    public JSONObject login(Profile profile) {
+        boolean isUsername = false;
+        String sql = "SELECT username from profile where password = ? and ";
+        sql +=(profile.getEmail() == null)?"username = ? LIMIT 1" : "email = ? LIMIT 1";
+        String username = null;
+
+        try{
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, profile.getPassword());
+            if(profile.getEmail() == null || profile.getEmail().isEmpty()){
+                isUsername = true;
+                ps.setString(2, profile.getUsername());
+            }else {
+                ps.setString(2, profile.getEmail());
+            }
+
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                username = resultSet.getString(1);
+            }
+
+            if(username == null || username.isEmpty()){
+                if(isUsername){
+                    return jsonStatementError("Wrong credential, username = " + profile.getUsername() + " and password = " + profile.getPassword());
+                }else{
+                    return jsonStatementError("Wrong credential, email = " + profile.getEmail() + " and password = " + profile.getPassword());
+                }
+            }
+
+            int result;
+            if((result = refreshSession(profile.getUsername())) != 1){
+                return jsonStatementError("duration update end not successful: " + result);
+            }
+            return getProfileByUserName(username);
+
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return jsonStatementError("Some problem with getting login");
     }
 
     public Map<Integer, JSONObject> getAllUsers() {
@@ -165,7 +197,7 @@ public class ConnectionProfiles {
     }
 
     private boolean checkUniqName(String username) {
-        String sql = "SELECT coutn(id) from public.profile WHERE name = ?";
+        String sql = "SELECT count(id) from public.profile WHERE username = ?";
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, username);
@@ -183,7 +215,26 @@ public class ConnectionProfiles {
         return true;
     }
 
-    private JSONObject jsonStatementError(String mssg) {
+    private int refreshSession(String username) {
+        String sql = "UPDATE public.profile SET duration = ? WHERE username = ?";
+        try {
+            LocalDateTime localDate = LocalDateTime.now().plusMinutes(10);
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setObject(1, localDate);
+            preparedStatement.setString(2, username);
+            int resultSet = preparedStatement.executeUpdate();
+
+            if(resultSet != 1){
+                System.out.println("UPDATE duration return code: " + resultSet);
+            }
+            return resultSet;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+        private JSONObject jsonStatementError(String mssg) {
         JSONObject auth = new JSONObject();
         auth.put("error", mssg);
         return auth;
