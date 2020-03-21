@@ -24,6 +24,9 @@ public class ConnectionProfiles {
     }
 
     public JSONObject register(Profile profile) {
+        if(!checkUniqName(profile.getUsername())){
+            return jsonStatementError("User on this username is already exists");
+        }
 
         String sql = "INSERT INTO public.Profile(sessionid, username, password, email, duration) values (?, ?, ?, ?, ?)";
         try {
@@ -40,15 +43,14 @@ public class ConnectionProfiles {
             ps.close();
 
             if (profile == null) {
-                JSONObject auth = new JSONObject();
-                auth.put("sessionid", null);
-                return auth;
+                return jsonStatementError("Can't add to database profile with this values");
             }
+
             return getProfileByUserName(profile.getUsername());
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return jsonStatementError("Something go wrong with register profile");
     }
 
     private JSONObject getProfileByUserName(String username) {
@@ -79,7 +81,7 @@ public class ConnectionProfiles {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return jsonStatementError("There is no profile on this username: " + username);
     }
 
     public JSONObject getSession(String sessionId) {
@@ -97,7 +99,7 @@ public class ConnectionProfiles {
 
                 JSONObject auth = new JSONObject();
                 if (profile == null || sessionExpire(profile.getDuration())) {
-                    auth.put("sessionid", "Session expired");
+                    jsonStatementWarn("Session expired");
                     return auth;
                 }
 
@@ -112,18 +114,13 @@ public class ConnectionProfiles {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        JSONObject auth = new JSONObject();
-        auth.put("sessionid", null);
-        return auth;
+
+        return jsonStatementError("Something go wrong with getting session");
     }
 
     public JSONObject login(String sessionId) {
         //TODO: add login logic;
         return null;
-    }
-
-    private boolean sessionExpire(LocalDateTime duration) {
-        return (duration.isBefore(LocalDateTime.now())) ? true : false;
     }
 
     public Map<Integer, JSONObject> getAllUsers() {
@@ -147,9 +144,7 @@ public class ConnectionProfiles {
 
                 if (auth.get("id") == null) {
                     Map<Integer, JSONObject> authFaile = new HashMap<>();
-                    JSONObject obj = new JSONObject();
-                    obj.put("resoult", null);
-                    authFaile.put(Integer.valueOf(0), obj);
+                    authFaile.put(Integer.valueOf(0), jsonStatementError("Not working... ID: " + x));
                     return authFaile;
                 }
                 x++;
@@ -164,4 +159,44 @@ public class ConnectionProfiles {
         return authFaile;
     }
 
+
+    private boolean sessionExpire(LocalDateTime duration) {
+        return (duration.isBefore(LocalDateTime.now())) ? true : false;
+    }
+
+    private boolean checkUniqName(String username) {
+        String sql = "SELECT coutn(id) from public.profile WHERE name = ?";
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int result = resultSet.getInt(1);
+                if(result > 0){
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    private JSONObject jsonStatementError(String mssg) {
+        JSONObject auth = new JSONObject();
+        auth.put("error", mssg);
+        return auth;
+    }
+
+    private JSONObject jsonStatementWarn(String mssg) {
+        JSONObject auth = new JSONObject();
+        auth.put("warn", mssg);
+        return auth;
+    }
+
+    private JSONObject jsonStatementInfo(String mssg) {
+        //TODO: implement body
+        return null;
+    }
 }
