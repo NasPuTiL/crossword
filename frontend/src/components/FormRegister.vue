@@ -156,6 +156,7 @@ export default {
         },
         created() {
             this.$http
+                //.get('http://194.28.50.218:8080/crossword/register'),
                 .get('http://localhost:8080/crossword/register')
                 .then(res => {
                     this.post = res.body;
