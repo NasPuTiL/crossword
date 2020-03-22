@@ -79,7 +79,7 @@
 </template>
 
 <script>
-//import VueSession from 'vue-session';
+import axios from 'axios';
 
 /*
 Vue.use({
@@ -135,10 +135,8 @@ export default {
                 password: this.password,
                 email: this.email
             };
-            this.$http
-                .post(
-                    //'http://194.28.50.218:8080/crossword/register',
-                    'http://localhost:8080/crossword/register',
+            axios.post(
+                    'http://localhost:8080/crossword_war/register',
                     postData,
                     {
                         headers: {
@@ -149,19 +147,20 @@ export default {
                             'Accept': 'application/json'
                         }
                     }
-                )
-                .then(res => {
-                    console.log(res.body);
+                ).then((response) => {
+                    console.log(response);
+                }, (error) => {
+                    console.log(error);
                 });
         },
-        created() {
-            this.$http
-                //.get('http://194.28.50.218:8080/crossword/register'),
-                .get('http://localhost:8080/crossword/register')
-                .then(res => {
-                    this.post = res.body;
-                });
-        },
+        // created() {
+        //     this.$http
+        //         //.get('http://194.28.50.218:8080/crossword/register'),
+        //         .get('http://localhost:8080/crossword/register')
+        //         .then(res => {
+        //             this.post = res.body;
+        //         });
+        // },
         /*
           this.$http.post('http://194.28.50.218:8080/crossword/test/register', {
             username: this.name,
