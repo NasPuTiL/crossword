@@ -6,15 +6,13 @@ import com.crossword.utility.Profile;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8081", allowedHeaders = "*")
 public class ControllerAuthorization {
 
     @Value(value = "${com.crossword.driver}")
