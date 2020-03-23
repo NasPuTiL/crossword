@@ -24,7 +24,7 @@ public class ConnectionProfiles {
     }
 
     public JSONObject register(Profile profile) {
-        if(!checkUniqName(profile.getUsername())){
+        if (!checkUniqName(profile.getUsername())) {
             return jsonStatementError("User on this username is already exists");
         }
 
@@ -117,16 +117,16 @@ public class ConnectionProfiles {
     public JSONObject login(Profile profile) {
         boolean isUsername = false;
         String sql = "SELECT username from profile where password = ? and ";
-        sql +=(profile.getEmail() == null)?"username = ? LIMIT 1" : "email = ? LIMIT 1";
+        sql += (profile.getEmail() == null) ? "username = ? LIMIT 1" : "email = ? LIMIT 1";
         String username = null;
 
-        try{
+        try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, profile.getPassword());
-            if(profile.getEmail() == null || profile.getEmail().isEmpty()){
+            if (profile.getEmail() == null || profile.getEmail().isEmpty()) {
                 isUsername = true;
                 ps.setString(2, profile.getUsername());
-            }else {
+            } else {
                 ps.setString(2, profile.getEmail());
             }
 
@@ -135,21 +135,21 @@ public class ConnectionProfiles {
                 username = resultSet.getString(1);
             }
 
-            if(username == null || username.isEmpty()){
-                if(isUsername){
+            if (username == null || username.isEmpty()) {
+                if (isUsername) {
                     return jsonStatementError("Wrong credential, username = " + profile.getUsername() + " and password = " + profile.getPassword());
-                }else{
+                } else {
                     return jsonStatementError("Wrong credential, email = " + profile.getEmail() + " and password = " + profile.getPassword());
                 }
             }
 
             int result;
-            if((result = refreshSession(profile.getUsername())) != 1){
+            if ((result = refreshSession(profile.getUsername())) != 1) {
                 return jsonStatementError("duration update end not successful: " + result);
             }
             return getProfileByUserName(username);
 
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return jsonStatementError("Some problem with getting login");
@@ -203,9 +203,9 @@ public class ConnectionProfiles {
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            while(resultSet.next()){
+            while (resultSet.next()) {
                 int result = resultSet.getInt(1);
-                if(result > 0){
+                if (result > 0) {
                     return false;
                 }
             }
@@ -224,7 +224,7 @@ public class ConnectionProfiles {
             preparedStatement.setString(2, username);
             int resultSet = preparedStatement.executeUpdate();
 
-            if(resultSet != 1){
+            if (resultSet != 1) {
                 System.out.println("UPDATE duration return code: " + resultSet);
             }
             return resultSet;
@@ -234,7 +234,7 @@ public class ConnectionProfiles {
         return -1;
     }
 
-        private JSONObject jsonStatementError(String mssg) {
+    private JSONObject jsonStatementError(String mssg) {
         JSONObject auth = new JSONObject();
         auth.put("error", mssg);
         return auth;
@@ -246,8 +246,121 @@ public class ConnectionProfiles {
         return auth;
     }
 
-    private JSONObject jsonStatementInfo(String mssg) {
-        //TODO: implement body
-        return null;
+    private JSONObject jsonStatementOK(String mssg) {
+        JSONObject auth = new JSONObject();
+        auth.put("OK", mssg);
+        return auth;
+    }
+
+    public Map<Integer, JSONObject> setKeyAndValues(JSONObject json) {
+        String key = (String) json.get("key");
+        if (key == null || key.isEmpty()) {
+            jsonStatementError("key invalid or empty");
+        }
+
+        List<String> valuesList = (List<String>) json.get("values");
+        if (valuesList == null || valuesList.isEmpty() || valuesList.size() < 1) {
+            jsonStatementError("values invalid or empty");
+        }
+
+        if (setKey(key) != 1) {
+            jsonStatementError("Issue with added key");
+        }
+
+        int keyID = findValueID(key);
+        setValues(valuesList, keyID);
+
+        return jsonStatementOK("done");
+    }
+
+    private int findValueID(String key) {
+        String sql = "SELECT Id from key_word where key = ? LIMIT 1";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, key);
+            ResultSet resultSet = ps.executeQuery();
+
+            int id = 0;
+            while (resultSet.next()) {
+                id = resultSet.getInt(1);
+            }
+            return id;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    private int setValues(List<String> valuesList, int keyID) {
+        String sql = "insert into value_word (key_word__fk , value ) values (?, ?);";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            for (String value : valuesList) {
+                ps.setInt(1, keyID);
+                ps.setString(2, value);
+                int result = ps.executeUpdate();
+                if (result != 1) {
+                    System.out.println("error! incorrect value = " + value);
+                    return -1;
+                }
+            }
+            ps.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return 1;
+    }
+
+    private int setKey(String key) {
+        String sql = "insert into key_word (key, power ) values (?, 1);";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, key);
+            int result = ps.executeUpdate();
+            ps.close();
+
+            return result;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    public Map<Integer, JSONObject> findResult(JSONObject json) {
+        Map<Integer, JSONObject> results = new HashMap<>();
+
+        List<String> valuesList = (List<String>) json.get("values");
+        if (valuesList == null || valuesList.isEmpty() || valuesList.size() < 1) {
+            jsonStatementError("values invalid or empty");
+        }
+        String sql = "select kw.key, COUNT(vw.key_word__fk) from key_word kw\n" +
+                "left join value_word vw on kw.id = vw.key_word__fk\n";
+        for (int i = 0; i < valuesList.size(); i++) {
+            sql += "where vw.value = ?";
+            if (i < valuesList.size() - 1) {
+                sql += " or ";
+            }
+        }
+        sql += "GROUP by kw.key  order by COUNT(vw.key_word__fk) DESC;";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            for (int i = 1; i <= valuesList.size(); i++) {
+                ps.setString(i, valuesList.get(i - 1));
+            }
+            ResultSet resultSet = ps.executeQuery();
+            int x = 0;
+            while (resultSet.next()) {
+                JSONObject auth = new JSONObject();
+                auth.put("key", resultSet.getString(1));
+                auth.put("matching results", resultSet.getInt(2));
+                results.put(Integer.valueOf(x), auth);
+            }
+            return results;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return jsonStatementError("find not working correctly");
     }
 }

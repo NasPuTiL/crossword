@@ -76,4 +76,18 @@ public class ControllerAuthorization {
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
         return cp.getAllUsers();
     }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/setKeyAndValues")
+    public Map<Integer, JSONObject> setKeyAndValues(@RequestBody JSONObject json) {
+        System.out.println("@setKeyAndValues");
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        return cp.setKeyAndValues(json);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/findResult")
+    public Map<Integer, JSONObject> findResult(@RequestBody JSONObject json) {
+        System.out.println("@findResult");
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        return cp.findResult(json);
+    }
 }
