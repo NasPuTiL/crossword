@@ -136,7 +136,7 @@ export default {
                 email: this.email
             };
             axios.post(
-                    'http://localhost:8080/register',
+                    'http://localhost:8080/crossword/register',
                     postData,
                     {
                         headers: {
