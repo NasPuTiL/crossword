@@ -167,14 +167,17 @@ export default {
                     //'Access-Control-Allow-Origin': 'true',
                     //'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
                     //'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-                    'Access-Control-Allow-Headers': 'Content-Type',
                     //'Access-Control-Allow-Headers': 'Accept',
-                    'Content-Type': 'application/json',
                     //'Accept': 'application/json'
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                    'Content-Type': 'application/json',
+
                 },
-                emulateJSON: true,
+                //emulateJSON: true,
+                /*
                 proxy: '192.168.100.30',
                 port: 8088,
+                */
             }).then(function (response) {
                 if (response.status === 200) {
                 //this.$session.start()
