@@ -28,11 +28,10 @@
                     <v-spacer class="mt-5" />
 
                     <v-btn
-                        :disabled="!valid"
                         color="gray lighten-5"
                         class="mr-4"
                         :class="`d-flex justify-end`"
-                        @click="register"
+                        @click="submit"
                     >
                         Zarejestruj
                     </v-btn>
@@ -79,7 +78,7 @@
 </template>
 
 <script>
-//import VueSession from 'vue-session';
+//import axios from 'axios';
 
 /*
 Vue.use({
@@ -123,65 +122,88 @@ export default {
 
     methods: {
         submit() {
-            if (this.validate) {
-                this.register;
+            if (this.validate()) {  
+                this.register();
             } else {
                 console.log('Chuja tam wyszło!');
             }
         },
+
         register() {
+            /*
             const postData = {
                 username: this.name,
                 password: this.password,
                 email: this.email
             };
-            this.$http
-                .post(
-                    //'http://194.28.50.218:8080/crossword/register',
-                    'http://localhost:8080/crossword/register',
+            
+            axios.post(
+                    'http://194.28.50.218:8080/crossword/register',
                     postData,
                     {
+
                         headers: {
                             'Access-Control-Allow-Origin': '*',
                             'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
                             'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
-                        }
+                        },
                     }
-                )
-                .then(res => {
-                    console.log(res.body);
+                ).then((response) => {
+                    console.log(response);
+                }, (error) => {
+                    console.log(error);
                 });
+            */
+
+            this.$http.post('http://194.28.50.218:8080/crossword/register', {
+                username: this.name,
+                password: this.passwd,
+                email: this.email,
+            },
+            {
+                headers: {
+                    //'Access-Control-Allow-Origin': 'true',
+                    //'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
+                    //'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                    //'Access-Control-Allow-Headers': 'Accept',
+                    'Content-Type': 'application/json',
+                    //'Accept': 'application/json'
+                },
+                emulateJSON: true,
+                proxy: '192.168.100.30',
+                port: 8088,
+            }).then(function (response) {
+                if (response.status === 200) {
+                //this.$session.start()
+                //this.$session.set('jwt', response.body.token)
+                //this.$http.headers.common['Authorization'] = 'Bearer ' + response.body.token
+                //this.$router.push('/panel/search')
+                console.log('ok', response)
+                }
+            }, function (err) {
+                console.log('err', err)
+            })
         },
-        created() {
-            this.$http
-                //.get('http://194.28.50.218:8080/crossword/register'),
-                .get('http://localhost:8080/crossword/register')
-                .then(res => {
-                    this.post = res.body;
-                });
-        },
-        /*
-          this.$http.post('http://194.28.50.218:8080/crossword/test/register', {
-            username: this.name,
-            password: this.password,
-            email: this.email
-          }).then(function (response) {
-            if (response.status === 200 && 'token' in response.body) {
-              this.$session.start()
-              this.$session.set('jwt', response.body.token)
-              Vue.http.headers.common['Authorization'] = 'Bearer ' + response.body.token
-              this.$router.push('/panel/search')
-            }
-          }, function (err) {
-            console.log('err', err)
-          })
-        */
+        // created() {
+        //     this.$http
+        //         //.get('http://194.28.50.218:8080/crossword/register'),
+        //         .get('http://localhost:8080/crossword/register')
+        //         .then(res => {
+        //             this.post = res.body;
+        //         });
+        // },
+        
+          
+
+        
 
         validate() {
-            console.log(this.$refs.form.validate());
+            //console.log(this.$refs.form.validate());
             this.$refs.form.validate();
+            return this.$refs.form.validate()
         },
         reset() {
             this.$refs.form.reset();
