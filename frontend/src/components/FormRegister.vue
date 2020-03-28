@@ -171,11 +171,10 @@ export default {
                     //'Accept': 'application/json'
                     'Access-Control-Allow-Headers': 'Content-Type',
                     'Content-Type': 'application/json',
-
                 },
                 //emulateJSON: true,
                 /*
-                proxy: '192.168.100.30',
+                proxy: '8.8.8.8',
                 port: 8088,
                 */
             }).then(function (response) {
