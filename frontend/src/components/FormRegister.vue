@@ -157,7 +157,7 @@ export default {
                 });
             */
 
-            this.$http.post('http://194.28.50.218:8080/crossword/register', {
+            this.$http.post('http://localhost:8080/crossword/register', {
                 username: this.name,
                 password: this.passwd,
                 email: this.email,
