@@ -63,22 +63,17 @@ public class ControllerAuthorization {
         return cp.getAllUsers();
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/get2")
-    public String testGETMethodWithArguments(int a, int b) {
-        System.out.println("@testGETMethodWithArguments");
-        return "Return subtitle from GET Method with arguments. I added and resoult = " + a + b;
+    @RequestMapping(method = RequestMethod.POST, value = "/setKeyAndValues")
+    public Map<Integer, JSONObject> setKeyAndValues(@RequestBody JSONObject json) {
+        System.out.println("@setKeyAndValues");
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        return cp.setKeyAndValues(json);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/post1")
-    public String testPOSTMethodWithoutArguments() {
-        System.out.println("@testPOSTMethodWithoutArguments");
-        return "Return subtitle from POST Method without arguments.";
+    @RequestMapping(method = RequestMethod.POST, value = "/findResult")
+    public Map<Integer, JSONObject> findResult(@RequestBody JSONObject json) {
+        System.out.println("@findResult");
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        return cp.findResult(json);
     }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/post2")
-    public String testPOSTMethodWithArguments(int a, int b) {
-        System.out.println("@testPOSTMethodWithArguments");
-        return "Return subtitle from POST Method with arguments. I added and resoult = " + a + b;
-    }
-
 }
