@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:8081", allowedHeaders = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ControllerAuthorization {
 
     @Value(value = "${com.crossword.driver}")
@@ -36,6 +36,22 @@ public class ControllerAuthorization {
         }
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
         return cp.getSession(sessionid);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/login")
+    public JSONObject login(@RequestBody JSONObject profileMap) {
+        System.out.println("@login\njson = " + profileMap);
+        String username = (String) profileMap.get("username");
+        String email = (String) profileMap.get("email");
+        String password = (String) profileMap.get("password");
+
+        if (!Improvment.hasNecessaryFieldsLogin(username, email, password)) {
+            return Improvment.jsonStatementError("Require fields: password and username or mail");
+        }
+
+        Profile profile = new Profile(username, email, password);
+        ConnectionProfiles cp = new ConnectionProfiles(this.driver, this.url, this.username, this.password);
+        return cp.login(profile);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/register")

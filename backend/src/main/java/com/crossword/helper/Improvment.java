@@ -23,4 +23,13 @@ public class Improvment {
         }
         return true;
     }
+
+    public static boolean hasNecessaryFieldsLogin(String username, String email, String password) {
+        if ((username == null || username.isEmpty()) &&
+                (email == null || email.isEmpty()) ||
+                password == null || password.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
 }
