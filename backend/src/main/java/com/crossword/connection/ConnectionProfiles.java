@@ -335,19 +335,20 @@ public class ConnectionProfiles {
         if (valuesList == null || valuesList.isEmpty() || valuesList.size() < 1) {
             jsonStatementError("values invalid or empty");
         }
-        String sql = "select kw.key, COUNT(vw.key_word__fk) from key_word kw\n" +
-                "left join value_word vw on kw.id = vw.key_word__fk\n";
+        String sql = "select kw.key, COUNT(vw.key_word__fk) from key_word kw " +
+                "left join value_word vw on kw.id = vw.key_word__fk where";
         for (int i = 0; i < valuesList.size(); i++) {
-            sql += "where vw.value = ?";
+            sql += " vw.value like ?";
             if (i < valuesList.size() - 1) {
                 sql += " or ";
             }
         }
-        sql += "GROUP by kw.key  order by COUNT(vw.key_word__fk) DESC;";
+        sql += " GROUP by kw.key  order by COUNT(vw.key_word__fk) DESC;";
+        System.out.println("sql = " + sql);
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             for (int i = 1; i <= valuesList.size(); i++) {
-                ps.setString(i, valuesList.get(i - 1));
+                ps.setString(i, addPercent(valuesList.get(i - 1)));
             }
             ResultSet resultSet = ps.executeQuery();
             int x = 0;
@@ -362,5 +363,9 @@ public class ConnectionProfiles {
             ex.printStackTrace();
         }
         return jsonStatementError("find not working correctly");
+    }
+
+    private String addPercent(String word) {
+        return "%" + word + "%";
     }
 }
