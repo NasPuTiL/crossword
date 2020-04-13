@@ -19,7 +19,19 @@ const routes = [
         path: '/register',
         name: 'register',
         component: () => import('../views/Register.vue')
-    }
+    },
+    {
+        path: '/attribute',
+        name: 'Attribute',
+        component: () => import('../views/AddAttributes.vue')
+    }, 
+    {
+        path: '/panel',
+        name: 'Panel',
+        component: () => import('../views/AdminPanel.vue')
+    }   
+
+
 ];
 
 const router = new VueRouter({

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
+//@CrossOrigin(origins = "http://194.28.50.218:8081", allowedHeaders = "*")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ControllerAuthorization {
 
@@ -85,9 +86,11 @@ public class ControllerAuthorization {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/findResult")
-    public Map<Integer, JSONObject> findResult(@RequestBody JSONObject json) {
+    public Map<String, JSONObject> findResult(@RequestBody JSONObject json) {
         System.out.println("@findResult");
+        System.out.println("json = " + json);
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
-        return cp.findResult(json);
+        Map<String, JSONObject> result = cp.findResult(json);
+        return result;
     }
 }

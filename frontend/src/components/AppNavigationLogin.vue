@@ -5,7 +5,8 @@
             v-model="drawer"
             class="grey lighten-5"
             dark
-            disable-resize-watcher >
+            disable-resize-watcher
+        >
             <v-list>
                 <template v-for="(item, index) in items">
                     <v-list-item :key="index">
@@ -28,25 +29,26 @@
             </router-link>
             <v-spacer class="hidden-sm-and-down"></v-spacer>
             <v-btn
-                to="sign-in"
+                to="attribute"
                 depressed
                 large
                 class="hidden-sm-and-down ml-3 mr-3"
-                >{{ 'logowanie' | uppercase }}</v-btn>
+                >{{ 'Dodaj pytanie' | uppercase }}</v-btn>
             <v-btn
-                to="register"
+                to="logout"
                 raised
                 large
                 class="hidden-sm-and-down ml-3 mr-6 lg"
                 color="grey lighten-7"
-                >{{ 'rejestracja' | uppercase }}</v-btn>  
-            </v-app-bar>
+                @click="logout"
+                >{{ 'logout' | uppercase }}</v-btn>                    
+        </v-app-bar>
     </span>
 </template>
 
 <script>
 export default {
-    name: 'AppNavigation',
+    name: 'AppNavigationLoged',
     data() {
         return {
             appTitle: 'Crosswords',
@@ -54,10 +56,20 @@ export default {
             items: [
                 { title: 'Profile' },
                 { title: 'Sign In' },
-                { title: 'Register'}]
+                { title: 'log out'},                                
+                { title: 'Register' }
+            ]
         };
     },
-
+    methods: {
+        logout(){
+            console.log("AUTHB: " + this.$session.get("token"));
+            this.$session.set("token", null);
+            this.$session.clear();
+            this.$session.destroy();        
+            this.$router.push('/')
+        }
+    },
     filters: {
         uppercase: function(value) {
             if (!value) {

@@ -6,11 +6,13 @@
 
 <script>
 import FormRegister from '@/components/FormRegister';
+//import AppFooter from '@/components/AppFooter';
 
 export default {
     name: 'Register',
     components: {
-        FormRegister
+        FormRegister,
+ //       AppFooter
     }
 };
 </script>

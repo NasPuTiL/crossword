@@ -16,11 +16,6 @@
                 >{{ tempMessage }}</v-text-field
             >
         </v-col>
-        <!-- this part is left for example purposes 
-            <v-btn fab class="mt-5 brown darken-4">
-                <v-icon large color="white">mdi-chevron-down</v-icon>
-            </v-btn>
-            -->
     </v-layout>
 </template>
 
@@ -29,14 +24,61 @@ export default {
     name: 'QuestionInputField',
     data() {
         return {
-            tempMessage: ''
+            tempMessage: '',
+            value: '',
+            info: null,     
         };
     },
     methods: {
+        prepareData: function(value){
+            return value;
+        },
+        findResult: function(value){
+            this.$http
+                    .post(
+                        'http://localhost:8080/crossword/findResult',
+                        {
+                            values: value.split(' '),
+                        },
+                        {
+                            headers: {
+                                'Access-Control-Allow-Headers': 'Content-Type',
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    )
+                    .then(
+                        function(response) {
+                            if (response.status === 200) {
+                                console.log(response.data);
+                                this.info = response.data;
+                                console.log(this.info);
+                            }
+                        },
+                        function(err) {
+                            console.log('err', err);
+                        }
+                    );
+        },
+        findDiff: function(str1, str2){ 
+                let diff= "";
+                str2.split('').forEach(function(val, i){
+                    if (val != str1.charAt(i))
+                    diff += val ;         
+                });
+                return diff;
+            },
         submit: function() {
-            this.$emit('inputData', this.tempMessage);
-            //this.tempMessage = "";
-        }
+            if(this.tempMessage === ''){
+                this.value = "";
+                this.$emit('inputData', this.value);
+            }
+            else if(this.tempMessage !== '' && this.tempMessage.length > 2 && this.findDiff(this.value, this.tempMessage).length > 2){
+                this.value = this.tempMessage;
+                this.findResult(this.value);
+                this.$emit('inputData', this.info); 
+           }
+        },      
     }
 };
 </script>

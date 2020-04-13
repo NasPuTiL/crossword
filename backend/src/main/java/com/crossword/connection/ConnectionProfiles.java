@@ -1,14 +1,14 @@
 package com.crossword.connection;
 
 import com.crossword.utility.Profile;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.io.Reader;
-import java.io.StringReader;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class ConnectionProfiles {
     private static final java.util.UUID UUID = new UUID(28, 35);
@@ -65,7 +65,7 @@ public class ConnectionProfiles {
                 auth.put("id", resultSet.getString(1));
                 auth.put("username", resultSet.getString(2));
                 auth.put("email", resultSet.getString(3));
-                auth.put("sessionId", resultSet.getString(4));
+                auth.put("token", resultSet.getString(4));
                 auth.put("duration", resultSet.getString(5));
 
                 if (auth.get("id") == null) {
@@ -328,13 +328,14 @@ public class ConnectionProfiles {
         return 0;
     }
 
-    public Map<Integer, JSONObject> findResult(JSONObject json) {
-        Map<Integer, JSONObject> results = new HashMap<>();
+    public Map<String, JSONObject> findResult(JSONObject json) {
+        Map<String, JSONObject> results = new HashMap<>();
 
         List<String> valuesList = (List<String>) json.get("values");
         if (valuesList == null || valuesList.isEmpty() || valuesList.size() < 1) {
             jsonStatementError("values invalid or empty");
         }
+
         String sql = "select kw.key, COUNT(vw.key_word__fk) from key_word kw " +
                 "left join value_word vw on kw.id = vw.key_word__fk where";
         for (int i = 0; i < valuesList.size(); i++) {
@@ -344,7 +345,6 @@ public class ConnectionProfiles {
             }
         }
         sql += " GROUP by kw.key  order by COUNT(vw.key_word__fk) DESC;";
-        System.out.println("sql = " + sql);
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             for (int i = 1; i <= valuesList.size(); i++) {
@@ -354,10 +354,17 @@ public class ConnectionProfiles {
             int x = 0;
             while (resultSet.next()) {
                 JSONObject auth = new JSONObject();
-                auth.put("key", resultSet.getString(1));
-                auth.put("matching results", resultSet.getInt(2));
-                results.put(Integer.valueOf(x), auth);
+
+                int numb = resultSet.getInt(2);
+                auth.put("occurrences", numb);
+
+                String word = resultSet.getString(1);
+                auth.put("key", word);
+
+                results.put("obj[" + Integer.valueOf(x) + "]", auth);
+                x++;
             }
+            System.out.println("results = " + results);
             return results;
         } catch (SQLException ex) {
             ex.printStackTrace();

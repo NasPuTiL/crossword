@@ -130,80 +130,32 @@ export default {
         },
 
         register() {
-            /*
-            const postData = {
-                username: this.name,
-                password: this.password,
-                email: this.email
-            };
-            
-            axios.post(
-                    'http://194.28.50.218:8080/crossword/register',
-                    postData,
-                    {
 
-                        headers: {
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-                            'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                    }
-                ).then((response) => {
-                    console.log(response);
-                }, (error) => {
-                    console.log(error);
-                });
-            */
-
-            this.$http.post('http://localhost:8080/crossword/register', {
+//            this.$http.post('http://localhost:8080/crossword/register', {
+                this.$http.post('http://localhost:8080/crossword/register', {
                 username: this.name,
                 password: this.passwd,
                 email: this.email,
             },
             {
                 headers: {
-                    //'Access-Control-Allow-Origin': 'true',
-                    //'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-                    //'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-                    //'Access-Control-Allow-Headers': 'Accept',
-                    //'Accept': 'application/json'
                     'Access-Control-Allow-Headers': 'Content-Type',
                     'Content-Type': 'application/json',
                 },
-                //emulateJSON: true,
-                /*
-                proxy: '8.8.8.8',
-                port: 8088,
-                */
             }).then(function (response) {
                 if (response.status === 200) {
-                //this.$session.start()
-                //this.$session.set('jwt', response.body.token)
-                //this.$http.headers.common['Authorization'] = 'Bearer ' + response.body.token
-                //this.$router.push('/panel/search')
+                this.$session.start()
+                this.$session.set('token', response.body.token)
+                this.$http.headers.common['Authorization'] = 'Bearer ' + response.body.token
+                this.$router.push('/panel/search')
                 console.log('ok', response)
                 }
             }, function (err) {
                 console.log('err', err)
             })
         },
-        // created() {
-        //     this.$http
-        //         //.get('http://194.28.50.218:8080/crossword/register'),
-        //         .get('http://localhost:8080/crossword/register')
-        //         .then(res => {
-        //             this.post = res.body;
-        //         });
-        // },
-        
-          
-
-        
-
+   
         validate() {
-            //console.log(this.$refs.form.validate());
             this.$refs.form.validate();
             return this.$refs.form.validate()
         },

@@ -10,15 +10,6 @@
                         required
                     ></v-text-field>
 
-                    <!-- w późniejszej wersji dodać logowanie username/e-mail
-                    <v-text-field
-                        v-model="email"
-                        :rules="emailRules"
-                        label="E-mail"
-                        required
-                    ></v-text-field>
-                    -->
-
                     <v-text-field
                         v-model="passwd"
                         :rules="passwdRules"
@@ -44,7 +35,6 @@
 </template>
 
 <script>
-//import axios from 'axios';
 
 export default {
     name: 'FormRegister',
@@ -53,21 +43,14 @@ export default {
         name: '',
         nameRules: [
             v => !!v || 'Login jest wymagany',
-            v => (v && v.length >= 5) || 'Login musi być dłuższy niż 5 znaków'
+            v => (v && v.length >= 5) || 'Login musi byÄ‡ dĹ‚uĹĽszy niĹĽ 5 znakĂłw'
         ],
-        /*
-        email: '',
-        emailRules: [
-            v => !!v || 'E-mail jest wymagany',
-            v => /.+@.+\..+/.test(v) || 'E-mail musi być poprawny'
-        ],
-        */
         passwd: '',
         passwdRules: [
-            v => !!v || 'Hasło jest wymagane',
+            v => !!v || 'HasĹ‚o jest wymagane',
             v =>
                 (v && v.length >= 8) ||
-                'Hasło musi zawierać conajmniej 8 znaków'
+                'HasĹ‚o musi zawieraÄ‡ conajmniej 8 znakĂłw'
         ]
     }),
 
@@ -76,14 +59,16 @@ export default {
             if (this.validate()) {
                 this.login();
             } else {
-                console.log('Chuja tam wyszło!');
+                console.log('Chuja tam wyszĹ‚o!');
             }
         },
 
         login() {
-            this.$http
+            try{
+		this.$http
                 .post(
-                    'http://194.28.50.218:8080/crossword/login',
+                    //'http://194.28.50.218:8081/crossword/login',
+                    'http://localhost:8080/crossword/login',
                     {
                         username: this.name,
                         password: this.passwd
@@ -100,17 +85,24 @@ export default {
                         if (response.status === 200) {
                             console.log('ok', response),
                             this.$session.start(),
-                            this.$session.set('sessionId', response.body.sessionId),
+                            this.$session.set('token', response.body.token),
                             this.$session.set('username', response.body.username),
-                            this.$session.renew(response.body.sessionId)
+                            this.$session.renew(response.body.token)
+                            this.$router.push('/')
                             //console.log(this.$session.get('sessionId'))
                             //this.$session.renew(response.body.sessionId) //id key contains "sess:" before actual sessionID; remember to remove it before sending to API
                         }
                     },
                     function(err) {
+                        console.log('test');
                         console.log('err', err);
                     }
                 );
+		}catch (error) {
+            console.log('test_2');
+    		console.log(error.response); 
+  		 	return error.response;
+  		}
         },
 
         validate() {
@@ -123,7 +115,7 @@ export default {
         resetValidation() {
             this.$refs.form.resetValidation();
         }
-    }
+    } 
 };
 </script>
 
