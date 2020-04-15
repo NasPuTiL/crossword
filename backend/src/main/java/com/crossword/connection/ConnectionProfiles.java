@@ -1,5 +1,6 @@
 package com.crossword.connection;
 
+import com.crossword.mailAuthentication.SimpleMailSend;
 import com.crossword.utility.Profile;
 import org.json.simple.JSONObject;
 
@@ -45,6 +46,9 @@ public class ConnectionProfiles {
                 return jsonStatementError("Can't add to database profile with this values");
             }
 
+            //TODO: add smtp server to send mail
+/*            SimpleMailSend mailSend = new SimpleMailSend();
+            mailSend.sendMessage(profile.getEmail(), uniqueID, profile.getUsername());*/
             return getProfileByUserName(profile.getUsername());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -95,7 +99,7 @@ public class ConnectionProfiles {
 
                 JSONObject auth = new JSONObject();
                 if (profile == null || sessionExpire(profile.getDuration())) {
-                    jsonStatementWarn("Session expired");
+                    auth = jsonStatementWarn("Session expired");
                     return auth;
                 }
 

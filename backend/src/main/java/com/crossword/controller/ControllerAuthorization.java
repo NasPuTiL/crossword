@@ -93,4 +93,18 @@ public class ControllerAuthorization {
         Map<String, JSONObject> result = cp.findResult(json);
         return result;
     }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/authentication/me")
+    public Map<String, JSONObject> authToken(String token) {
+        System.out.println("@authToken");
+        System.out.println("token = " + token);
+        if (token == null || token.isEmpty()) {
+            return Improvment.jsonStatementError("There has no authentication Session");
+        }
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        JSONObject session = cp.getSession(token);
+        System.out.println("session = " + session);
+        return session;
+    }
+
 }

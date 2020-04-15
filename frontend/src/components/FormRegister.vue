@@ -35,42 +35,6 @@
                     >
                         Zarejestruj
                     </v-btn>
-                    <!--
-                    <v-select
-                        v-model="select"
-                        :items="items"
-                        :rules="[v => !!v || 'Płeć jest wymagana']"
-                        label="Płeć"
-                        required
-                    ></v-select>
-
-                    <v-checkbox
-                        v-model="checkbox"
-                        :rules="[
-                            v => !!v || 'Musisz się zgodzić, aby kontynuować!'
-                        ]"
-                        label="Zgadzasz się?"
-                        required
-                    ></v-checkbox>
-                    
-                    <v-spacer class="mt-5" />
-                    <v-btn
-                        :disabled="!valid"
-                        color="gray lighten-5"
-                        class="mr-4"
-                        @click="validate"
-                    >
-                        Sprawdź
-                    </v-btn>
-
-                    <v-btn color="gray lighten-5" class="mr-4" @click="reset">
-                        Resetuj formularz
-                    </v-btn>
-
-                    <v-btn color="gray lighten-5" @click="resetValidation">
-                        Resetuj sprawdzenie
-                    </v-btn>
-                    -->
                 </v-form>
             </v-card>
         </v-col>
@@ -147,8 +111,10 @@ export default {
                 this.$session.start()
                 this.$session.set('token', response.body.token)
                 this.$http.headers.common['Authorization'] = 'Bearer ' + response.body.token
-                this.$router.push('/panel/search')
+                alert("We send to you email tih authorization. Please click on it.");
+                this.$router.push('/')
                 console.log('ok', response)
+
                 }
             }, function (err) {
                 console.log('err', err)
