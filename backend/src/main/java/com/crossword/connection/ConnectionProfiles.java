@@ -2,14 +2,16 @@ package com.crossword.connection;
 
 import com.crossword.mailAuthentication.SimpleMailSend;
 import com.crossword.utility.Profile;
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.binding.StringBinding;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import javax.swing.*;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.format.TextStyle;
+import java.util.*;
 
 public class ConnectionProfiles {
     private static final java.util.UUID UUID = new UUID(28, 35);
@@ -256,13 +258,18 @@ public class ConnectionProfiles {
         return auth;
     }
 
-    public Map<Integer, JSONObject> setKeyAndValues(JSONObject json) {
-        String key = (String) json.get("key");
-        if (key == null || key.isEmpty()) {
+    public Map<String, JSONObject> setKeyAndValues(JSONObject json) {
+        Collection s = json.values();
+        List<List<String>> valuesDoubleList = new LinkedList<>(s);
+        List valuesList = valuesDoubleList.get(0);
+        Object keyy = valuesDoubleList.get(1);
+        if (keyy == null) {
             jsonStatementError("key invalid or empty");
         }
-
-        List<String> valuesList = (List<String>) json.get("values");
+        String key = (String) keyy;
+        if (key.isEmpty()) {
+            jsonStatementError("key invalid or empty");
+        }
         if (valuesList == null || valuesList.isEmpty() || valuesList.size() < 1) {
             jsonStatementError("values invalid or empty");
         }
@@ -270,7 +277,6 @@ public class ConnectionProfiles {
         if (setKey(key) != 1) {
             jsonStatementError("Issue with added key");
         }
-
         int keyID = findValueID(key);
         setValues(valuesList, keyID);
 
@@ -324,7 +330,6 @@ public class ConnectionProfiles {
             ps.setString(1, key);
             int result = ps.executeUpdate();
             ps.close();
-
             return result;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -378,5 +383,35 @@ public class ConnectionProfiles {
 
     private String addPercent(String word) {
         return "%" + word + "%";
+    }
+
+    public JSONObject removeUser(JSONObject json) {
+        String id = (String) json.get("id");
+        String username = (String) json.get("username");
+
+        if (id == null || username == null || id.equals("") || username.equals("")) {
+            return jsonStatementError("Remove user process failure");
+        }
+
+        String sql = "DELETE FROM profile WHERE id = ? and username = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, id);
+            ps.setString(2, username);
+
+            int result = ps.executeUpdate();
+            ps.close();
+
+            System.out.println("result = " + result);
+            if (result != 1) {
+                return jsonStatementError("Remove user process failure..");
+            }
+
+            return jsonStatementOK("User " + username + " was removed");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return jsonStatementError("Remove user process failure.");
     }
 }

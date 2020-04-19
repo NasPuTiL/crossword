@@ -79,8 +79,10 @@ public class ControllerAuthorization {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/setKeyAndValues")
-    public Map<Integer, JSONObject> setKeyAndValues(@RequestBody JSONObject json) {
+    public Map<String, JSONObject> setKeyAndValues(@RequestBody JSONObject json) {
         System.out.println("@setKeyAndValues");
+        System.out.println("json = " + json);
+
         ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
         return cp.setKeyAndValues(json);
     }
@@ -107,4 +109,16 @@ public class ControllerAuthorization {
         return session;
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = "/profile")
+    public Map<String, JSONObject> removeUser(@RequestBody JSONObject json) {
+        System.out.println("@removeUser");
+        System.out.println("token = " + json);
+        if (json == null || json.isEmpty()) {
+            return Improvment.jsonStatementError("There has no authentication Session");
+        }
+        ConnectionProfiles cp = new ConnectionProfiles(driver, url, username, password);
+        JSONObject session = cp.removeUser(json);
+        System.out.println("session = " + session);
+        return session;
+    }
 }

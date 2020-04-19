@@ -94,7 +94,6 @@ export default {
         },
 
         register() {
-
 //            this.$http.post('http://localhost:8080/crossword/register', {
                 this.$http.post('http://localhost:8080/crossword/register', {
                 username: this.name,

@@ -84,11 +84,16 @@ export default {
                     function(response) {
                         if (response.status === 200) {
                             console.log('ok', response),
-                            this.$session.start(),
-                            this.$session.set('token', response.body.token),
-                            this.$session.set('username', response.body.username),
-                            this.$session.renew(response.body.token)
-                            this.$router.push('/')
+                            console.log('TEST: ' + response.data.error)
+                            if(response.data.error === undefined){
+                                this.$session.start(),
+                                this.$session.set('token', response.body.token),
+                                this.$session.set('username', response.body.username),
+                                this.$session.renew(response.body.token)
+                                this.$router.push('/')
+                            }else{
+                                alert(response.data.error)
+                            }
                             //console.log(this.$session.get('sessionId'))
                             //this.$session.renew(response.body.sessionId) //id key contains "sess:" before actual sessionID; remember to remove it before sending to API
                         }

@@ -48,8 +48,7 @@ public class SimpleMailSend {
             transport.sendMessage(message, message.getAllRecipients());
             transport.close();
 
-        } catch (
-                MessagingException me) {
+        } catch (MessagingException me) {
             me.printStackTrace();
         }
     }

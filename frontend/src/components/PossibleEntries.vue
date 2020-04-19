@@ -7,7 +7,6 @@
                     <v-list-item-title> WARTOŚĆ: "{{ value.key}}", ilość wystąpień: {{value.occurrences}}.</v-list-item-title>
                 </v-list-item>
             </v-card>
-            
         </v-col>
     </v-layout>
 </template>

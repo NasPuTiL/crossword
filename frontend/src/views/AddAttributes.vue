@@ -1,18 +1,17 @@
 <template>
-    <v-container fluid class="input-background" style="max-height: 100vh;">
         <div>
-                Add attribuetess....
+            <h1>Add your own key to crossword using below formule </h1>
+            <attribute></attribute>
         </div>
-    </v-container>
 </template>
 
 <script>
-
+import AddAttribute from '../components/AddAttribute';
 
 export default {
     name: 'Attribute',
     components: {
-
+        attribute: AddAttribute
     },
     data() {
         return {
@@ -26,3 +25,9 @@ export default {
     }
 };
 </script>
+
+<style>
+h1{
+    text-align: center;
+}
+</style>
