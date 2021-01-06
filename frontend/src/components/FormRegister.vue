@@ -89,7 +89,7 @@ export default {
             if (this.validate()) {  
                 this.register();
             } else {
-                console.log('Chuja tam wyszło!');
+                console.log('Otrzymano blad');
             }
         },
 

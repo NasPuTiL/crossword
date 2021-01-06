@@ -59,7 +59,7 @@ export default {
             if (this.validate()) {
                 this.login();
             } else {
-                console.log('Chuja tam wyszĹ‚o!');
+                console.log('Otrzymano blad');
             }
         },
 
